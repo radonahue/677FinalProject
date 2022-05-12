@@ -1,0 +1,54 @@
+---
+title: "Illinois Rain Data Analysis"
+author: "Rachel Donahue"
+date: "05-12-2022"
+output: "pdf_document"
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("DataManipulationScript.R")
+```
+
+
+The Illinois Data Set contained an average amount of precipitation between storms that were between 1960-1964 in the state of Illinois, and this analysis attempts to identify a relevant statistical distribution that could be applied to the data to make statements about the weather activity for that period of time. Lessons learned are described at the end.
+
+```{r echo=F}
+qqPlot(d$value)
+
+```
+
+After combining all the years together and graphing the data on the above QQ-Plot, I noticed that the data seems to follow an exponential distribution pattern, similar to what was shown on p.92 Figure 4.8 in "In All Likelihood: Statistical Modelling and Inference Using Likelihood" by Yudi Pawitan.
+
+```{r echo=F}
+qqPlot(t)
+
+```
+
+
+To confirm this, I simulated some fake exponential data with rate parameter=3 and plotted it using the same method, the shape looks roughly similar so I feel somewhat confident in the call to label this distribution as such.
+
+```{r echo=F}
+mledist(d$value, "exp")
+
+```
+
+The Maximum Likelihood Estimate for the exponential distribution parameter is lambda, which is the rate at which events occur. The rate parameter given by the above expression is 4.45. 
+
+There are valid concerns about the above statement. The exponential distribution is useful for making statements about time, so what does a rate parameter of 4.45 really mean? And how does that help answer questions about rainfall? Especially given that the data doesn't given any real information about timing between storms, the conclusions that could be drawn seem quite limited. A key assumption for a Poisson process that generates an exponential distribution is that the average time between events is constant, an assumption that seems easily violated in weather data.
+
+Since the exponential distribution does not appear to be perhaps the most useful in this case, I'll defer to the normal distribution to make some conclusions about rainfall. Even though this approach also is problematic since it was demonstrated that the data is not truly normally distributed, it is the most famous statistical distribution and the easiest one to compare against to make quick statements about the data.
+
+```{r echo=F}
+ggplot(data=d, aes(x=variable, y=value))+geom_boxplot()+stat_summary(fun=mean, geom="point", shape=23, size=4)
+
+d%>%group_by(variable)%>%summarise(count=n())
+
+```
+
+As we can see from the boxplots, the distribution per storm per year is around the same, the rainiest year seems to be 1961 with the highest average precipitation per storm. However the year with the most storms is 1962.
+
+This analysis shows the need to clearly identify an appropriate distribution when working with data, although it is certainly a challenge. Knowing the limitations of a distribution and what they can actually tell you about a data is extremely important.
+
+
+
+
